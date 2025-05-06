@@ -45,7 +45,7 @@ def read_rides_as_dicts(filename):
 
 class Row:
     # Uncomment to see effect of slots
-    #__slots__ = ['route', 'date', 'daytype', 'rides']
+    __slots__ = ['route', 'date', 'daytype', 'rides']
     def __init__(self, route, date, daytype, rides):
         self.route = route
         self.date = date
@@ -76,7 +76,7 @@ def read_rides_as_instances(filename):
 if __name__ == '__main__':
     import tracemalloc
     tracemalloc.start()
-    read_rides = read_rides_as_tuples # Change to as_dicts, as_instances, etc.
+    read_rides = read_rides_as_instances # Change to as_dicts, as_instances, etc.
     rides = read_rides('../Data/ctabus.csv')
 
     print('Memory Use: Current %d, Peak %d' % tracemalloc.get_traced_memory())
