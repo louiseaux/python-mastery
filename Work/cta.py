@@ -3,12 +3,21 @@
 # Exercise 2.2
 
 from collections import defaultdict, Counter
-import readrides
+import sys
 import tracemalloc
 
 tracemalloc.start()
 
-rows = readrides.read_rides_as_dicts('../Data/ctabus.csv')
+if False:
+    # Part (b)
+    import reader
+    rows = reader.read_csv_as_dicts('../Data/ctabus.csv',
+                                    [sys.intern, sys.intern, sys.intern, int])
+else:
+    # Part (d) - Challenge
+    import colreader
+    rows = colreader.read_csv_as_columns('../Data/ctabus.csv', 
+                                         [sys.intern, sys.intern, sys.intern, int])
 
 # --------------------------------------------------
 # Question 1:  How many bus routes are in Chicago?
