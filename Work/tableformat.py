@@ -2,12 +2,16 @@
 #
 # Exercise 3.2
 
-class TableFormatter:
+from abc import ABC, abstractmethod
+
+class TableFormatter(ABC):
+    @abstractmethod
     def headings(self, headers):
-        raise NotImplementedError()
+        pass
     
+    @abstractmethod
     def row(self, rowdata):
-        raise NotImplementedError()
+        pass
 
 class TextTableFormatter(TableFormatter):
     def headings(self, headers):
@@ -39,16 +43,19 @@ class HTMLTableFormatter(TableFormatter):
 
 def create_formatter(name):
     if name == 'text':
-        formatter_cls = TextTableFormatter()
+        formatter = TextTableFormatter
     elif name == 'csv':
-        formatter_cls = CSVTableFormatter()
+        formatter = CSVTableFormatter
     elif name == 'html':
-        formatter_cls = HTMLTableFormatter()
+        formatter = HTMLTableFormatter
     else:
         raise RuntimeError('Unknown format %s' % name)
-    return formatter_cls
+    return formatter()
 
 def print_table(records, fields, formatter):
+    if not isinstance(formatter, TableFormatter):
+        raise TypeError('Expected a TableFormatter')
+    
     # Print the table headers in a 10-character wide field
     formatter.headings(fields)
 
