@@ -3,6 +3,7 @@
 # Exercise 1.5
 
 import csv
+import tableformat
 
 class Stock:
     def __init__(self, name, shares, price):
@@ -29,15 +30,6 @@ def read_portfolio(filename):
             portfolio.append(record)
     return portfolio
 
-def print_portfolio(portfolio):
-    '''
-    Make a nicely formatted table showing stock data
-    '''
-    print('%10s %10s %10s' % ('name', 'shares', 'price'))
-    print(('-'*10 + ' ')*3)
-    for s in portfolio:
-        print('%10s %10d %10.2f' % (s.name, s.shares, s.price))
-
 if __name__ == '__main__':
     portfolio = read_portfolio('../Data/portfolio.csv')
-    print_portfolio(portfolio)
+    tableformat.print_table(portfolio, ['name', 'shares', 'price'])
