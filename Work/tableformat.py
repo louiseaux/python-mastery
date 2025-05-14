@@ -4,6 +4,18 @@
 
 from abc import ABC, abstractmethod
 
+def print_table(records, fields, formatter):
+    if not isinstance(formatter, TableFormatter):
+        raise TypeError('Expected a TableFormatter')
+    
+    # Print the table headers in a 10-character wide field
+    formatter.headings(fields)
+
+    # Output the table contents
+    for r in records:
+        rowdata = [ getattr(r, fieldname) for fieldname in fields ]
+        formatter.row(rowdata)
+
 class TableFormatter(ABC):
     @abstractmethod
     def headings(self, headers):
@@ -41,25 +53,32 @@ class HTMLTableFormatter(TableFormatter):
             print('<td>%s</td>' % d, end=' ')
         print('</tr>')
 
-def create_formatter(name):
+class ColumnFormatMixin:
+    formats = []
+    def row(self, rowdata):
+        rowdata = [ (fmt % d) for fmt, d in zip(self.formats, rowdata) ]
+        super().row(rowdata)
+    
+class UpperHeadersMixin:
+    def headings(self, headers):
+        super().headings([ h.upper() for h in headers ])
+
+def create_formatter(name, column_formats=None, upper_headers=None):
     if name == 'text':
-        formatter = TextTableFormatter
+        formatter_cls = TextTableFormatter
     elif name == 'csv':
-        formatter = CSVTableFormatter
+        formatter_cls = CSVTableFormatter
     elif name == 'html':
-        formatter = HTMLTableFormatter
+        formatter_cls = HTMLTableFormatter
     else:
         raise RuntimeError('Unknown format %s' % name)
-    return formatter()
-
-def print_table(records, fields, formatter):
-    if not isinstance(formatter, TableFormatter):
-        raise TypeError('Expected a TableFormatter')
     
-    # Print the table headers in a 10-character wide field
-    formatter.headings(fields)
+    if column_formats:
+        class formatter_cls(ColumnFormatMixin, formatter_cls):
+            formats = column_formats
+    
+    if upper_headers:
+        class formatter_cls(UpperHeadersMixin, formatter_cls):
+            pass
 
-    # Output the table contents
-    for r in records:
-        rowdata = [ getattr(r, fieldname) for fieldname in fields ]
-        formatter.row(rowdata)
+    return formatter_cls()
