@@ -1,44 +1,47 @@
 # reader.py
 #
-# Exercise 2.6
+# Exercise 5.1
 
-from abc import ABC, abstractmethod
 import csv
+from typing import Dict, List, TextIO
 
-class CSVParser(ABC):
+def csv_as_dicts(lines: TextIO, types: List[type], *, headers: List[str] | None = None) -> List[Dict]:
+    '''
+    Convert lines of CSV data into a list of dictionaries
+    '''
+    records: List = []
+    rows = csv.reader(lines)
+    if headers is None:
+        headers = next(rows)
+    for row in rows:
+        record = { name: func(val)
+                   for name, func, val in zip(headers, types, row) }
+        records.append(record)
+    return records
 
-    def parse(self, filename):
-        records = []
-        with open(filename) as f:
-            rows = csv.reader(f)
-            headers = next(rows)
-            for row in rows:
-                record = self.make_record(headers, row)
-                records.append(record)
-        return records
-    
-    @abstractmethod
-    def make_record(self, headers, row):
-        pass
+def csv_as_instances(lines: TextIO, cls: type, *, headers: List[str] | None = None) -> List[type]:
+    '''
+    Convert lines of CSV data into a list of instances
+    '''
+    records: List = []
+    rows = csv.reader(lines)
+    if headers is None:
+        headers = next(rows)
+    for row in rows:
+        record = cls.from_row(row)
+        records.append(record)
+    return records
 
-class DictCSVParser(CSVParser):
-    def __init__(self, types):
-        self.types = types
+def read_csv_as_dicts(filename: str, types: List[type], *, headers: List[str] | None = None) -> List[Dict]:
+    '''
+    Read CSV data into a list of dictionaries with optional type conversion
+    '''
+    with open(filename) as file:
+        return csv_as_dicts(file, types, headers=headers)
 
-    def make_record(self, headers, row):
-        return { name: func(val) for name, func, val in zip(headers, self.types, row) }
-    
-class InstanceCSVParser(CSVParser):
-    def __init__(self, cls):
-        self.cls = cls
-
-    def make_record(self, headers, row):
-        return self.cls.from_row(row)
-
-def read_csv_as_dicts(filename, types):
-    parser = DictCSVParser(types)
-    return parser.parse(filename)
-
-def read_csv_as_instances(filename, cls):
-    parser = InstanceCSVParser(cls)
-    return parser.parse(filename)
+def read_csv_as_instances(filename: str, cls: type, *, headers: List[str] | None = None) -> List[type]:
+    '''
+    Read CSV data into a list of instances
+    '''
+    with open(filename) as file:
+        return csv_as_instances(file, cls, headers=headers)
