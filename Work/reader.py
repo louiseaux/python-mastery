@@ -3,43 +3,31 @@
 # Exercise 5.1
 
 import csv
-from typing import Dict, List, TextIO
 
-def csv_as_dicts(lines: TextIO, types: List[type], *, headers: List[str] | None = None) -> List[Dict]:
-    '''
-    Convert lines of CSV data into a list of dictionaries
-    '''
-    records: List = []
+def convert_csv(lines, converter, *, headers=None):
     rows = csv.reader(lines)
     if headers is None:
         headers = next(rows)
-    for row in rows:
-        record = { name: func(val)
-                   for name, func, val in zip(headers, types, row) }
-        records.append(record)
-    return records
+    return list(map(lambda row: converter(headers, row), rows))
 
-def csv_as_instances(lines: TextIO, cls: type, *, headers: List[str] | None = None) -> List[type]:
-    '''
-    Convert lines of CSV data into a list of instances
-    '''
-    records: List = []
-    rows = csv.reader(lines)
-    if headers is None:
-        headers = next(rows)
-    for row in rows:
-        record = cls.from_row(row)
-        records.append(record)
-    return records
+def csv_as_dicts(lines, types, *, headers=None):
+    return convert_csv(lines,
+                       lambda headers, row: {name: func(val) for name, func, val in zip(headers, types, row)},
+                       headers=headers)
 
-def read_csv_as_dicts(filename: str, types: List[type], *, headers: List[str] | None = None) -> List[Dict]:
+def csv_as_instances(lines, cls, *, headers=None):
+    return convert_csv(lines,
+                       lambda headers, row: cls.from_row(row),
+                       headers=headers)
+
+def read_csv_as_dicts(filename, types, *, headers=None):
     '''
     Read CSV data into a list of dictionaries with optional type conversion
     '''
     with open(filename) as file:
         return csv_as_dicts(file, types, headers=headers)
 
-def read_csv_as_instances(filename: str, cls: type, *, headers: List[str] | None = None) -> List[type]:
+def read_csv_as_instances(filename, cls, *, headers=None):
     '''
     Read CSV data into a list of instances
     '''
