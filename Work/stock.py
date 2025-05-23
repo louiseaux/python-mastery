@@ -6,6 +6,8 @@ from structure import Structure
 
 class Stock(Structure):
     _fields = ('name', 'shares', 'price')
+    def __init__(self, name, shares, price):
+        self._init()
 
     @property
     def cost(self):
