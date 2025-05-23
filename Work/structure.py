@@ -2,18 +2,8 @@
 #
 # Exercise 6.1
 
-import inspect
-import sys
-
 class Structure:
     _fields = ()
-
-    @staticmethod
-    def _init():
-        locs = sys._getframe(1).f_locals    # No longer possible in Python 3.13+
-        self = locs.pop('self')
-        for name, val in locs.items():
-            setattr(self, name, val)
 
     def __setattr__(self, name, value):
         if name.startswith('_') or name in self._fields:
@@ -26,6 +16,14 @@ class Structure:
                            ', '.join(repr(getattr(self, name)) for name in self._fields))
     
     @classmethod
-    def set_fields(cls):
-        sig = inspect.signature(cls)
-        cls._fields = tuple(sig.parameters)
+    def create_init(cls):
+        '''
+        Create an __init__ method from _fields
+        '''
+        args = ','.join(cls._fields)
+        code = f'def __init__(self, {args}):\n'
+        for name in cls._fields:
+            code += f'    self.{name} = {name}\n'
+        locs = { }
+        exec(code, locs)
+        cls.__init__ = locs['__init__']
