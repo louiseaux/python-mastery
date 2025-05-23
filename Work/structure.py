@@ -2,6 +2,7 @@
 #
 # Exercise 6.1
 
+import inspect
 import sys
 
 class Structure:
@@ -23,3 +24,8 @@ class Structure:
     def __repr__(self):
         return '%s(%s)' % (type(self).__name__,
                            ', '.join(repr(getattr(self, name)) for name in self._fields))
+    
+    @classmethod
+    def set_fields(cls):
+        sig = inspect.signature(cls)
+        cls._fields = tuple(sig.parameters)
