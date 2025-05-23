@@ -2,21 +2,34 @@
 #
 # Exercise 5.4
 
-def typedproperty(name, expected_type):
-    private_name = '_' + name
-
-    @property
-    def value(self):
-        return getattr(self, private_name)
+class Validator:
+    def __init__(self, expected_type, name=None):
+        self.expected_type = expected_type
+        self.name = "_" + name if name is not None else None
     
-    @value.setter
-    def value(self, val):
-        if not isinstance(val, expected_type):
-            raise TypeError(f'Expected {expected_type}')
-        setattr(self, private_name, val)
+    def __set_name__(self, cls, name):
+        self.name = "_" + name
 
+    def check(self, value):
+        if not isinstance(value, self.expected_type):
+            raise TypeError(f"Expected {self.expected_type}")
+        return value
+
+    def __set__(self, instance, value):
+        instance.__dict__[self.name] = self.check(value)
+    
+    def __get__(self, instance, cls):
+        return instance.__dict__[self.name]
+
+def typedproperty(expected_type, name=None):
+    value = Validator(expected_type, name=name)
     return value
 
-String = lambda name: typedproperty(name, str)
-Integer = lambda name: typedproperty(name, int)
-Float = lambda name: typedproperty(name, float)
+def String():
+    return typedproperty(str)
+
+def Integer():
+    return typedproperty(int)
+
+def Float():
+    return typedproperty(float)
