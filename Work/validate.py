@@ -58,22 +58,64 @@ class PositiveFloat(Float, Positive):
 class NonEmptyString(String, NonEmpty):
     pass
 
-class ValidatedFunction:
-    def __init__(self, func):
-        self.func = func
-        self.signature = signature(func)
-        self.annotations = dict(func.__annotations__)
-        self.retcheck = self.annotations.pop('return', None)
+def isvalidator(item):
+    return isinstance(item, type) and issubclass(item, Validator)
 
-    def __call__(self, *args, **kwargs):
-        bound = self.signature.bind(*args, **kwargs)
+def validated(func):
+    sig = signature(func)
 
-        for name, val in self.annotations.items():
-            val.check(bound.arguments[name])
+    # Gather the function annotations
+    annotations = { name:val for name, val in func.__annotations__.items()
+                    if isvalidator(val) }
 
-        result = self.func(*args, **kwargs)
+    # Get the return annotation (if any)
+    retcheck = annotations.pop('return', None)
 
-        if self.retcheck:
-            self.retcheck.check(result)
+    def wrapper(*args, **kwargs):
+        bound = sig.bind(*args, **kwargs)
+        errors = []
 
+        # Enforce argument checks
+        for name, val in annotations.items():
+            try:
+                val.check(bound.arguments[name])
+            except Exception as e:
+                errors.append(f'    {name}: {e}')
+
+        if errors:
+            raise TypeError('Bad Arguments\n' + '\n'.join(errors))
+        
+        result = func(*args, **kwargs)
+
+        # Enforce return check (if any)
+        if retcheck:
+            try:
+                retcheck.check(result)
+            except Exception as e:
+                raise TypeError(f'Bad return: {e}') from None
         return result
+    
+    return wrapper
+
+if __name__ == '__main__':
+    @validated
+    def add(x: Integer, y: Integer) -> Integer:
+        return x + y
+    
+    @validated
+    def pow(x: Integer, y: Integer) -> Integer:
+        return x ** y
+    
+    class Stock:
+        def __init__(self, name, shares, price):
+            self.name = name
+            self.shares = shares
+            self.price = price
+
+        @property
+        def cost(self):
+            return self.shares * self.price
+        
+        @validated
+        def sell(self, nshares: PositiveInteger):
+            self.shares -= nshares
