@@ -2,6 +2,7 @@
 #
 # Exercise 4.2
 
+from functools import wraps
 from inspect import signature
 
 class Validator:
@@ -71,6 +72,7 @@ def validated(func):
     # Get the return annotation (if any)
     retcheck = annotations.pop('return', None)
 
+    @wraps(func)
     def wrapper(*args, **kwargs):
         bound = sig.bind(*args, **kwargs)
         errors = []
@@ -97,6 +99,40 @@ def validated(func):
     
     return wrapper
 
+def enforce(**annotations):
+    retcheck = annotations.pop('return_', None)
+
+    def decorate(func):
+        sig = signature(func)
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            bound = sig.bind(*args, **kwargs)
+            errors = []
+
+            # Enforce argument checks
+            for name, val in annotations.items():
+                try:
+                    val.check(bound.arguments[name])
+                except Exception as e:
+                    errors.append(f'    {name}: {e}')
+
+            if errors:
+                raise TypeError('Bad Arguments\n' + '\n'.join(errors))
+        
+            result = func(*args, **kwargs)
+
+            # Enforce return check (if any)
+            if retcheck:
+                try:
+                    retcheck.check(result)
+                except Exception as e:
+                    raise TypeError(f'Bad return: {e}') from None
+            return result
+    
+        return wrapper
+    return decorate
+
 if __name__ == '__main__':
     @validated
     def add(x: Integer, y: Integer) -> Integer:
@@ -105,6 +141,10 @@ if __name__ == '__main__':
     @validated
     def pow(x: Integer, y: Integer) -> Integer:
         return x ** y
+    
+    @enforce(x=Integer, y=Integer, return_=Integer)
+    def sub(x, y):
+        return x - y
     
     class Stock:
         def __init__(self, name, shares, price):
