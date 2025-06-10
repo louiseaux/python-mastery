@@ -26,6 +26,14 @@ class Typed(Validator):
         if not isinstance(value, cls.expected_type):
             raise TypeError(f'Expected {cls.expected_type}')
         return super().check(value)
+    
+_typed_classes = [
+    ('Integer', int),
+    ('Float', float),
+    ('String', str) ]
+
+globals().update((name, type(name, (Typed,), {'expected_type':ty}))
+                  for name, ty in _typed_classes)
 
 class Positive(Validator):
     @classmethod
@@ -40,15 +48,6 @@ class NonEmpty(Validator):
         if len(value) == 0:
             raise ValueError('Must be non-empty')
         return super().check(value)
-
-class Integer(Typed):
-    expected_type = int
-
-class Float(Typed):
-    expected_type = float
-
-class String(Typed):
-    expected_type = str
 
 class PositiveInteger(Integer, Positive):
     pass
