@@ -18,6 +18,10 @@ class Ticker(Structure):
     low = Float()
     volume = Integer()
 
+# Coroutine that splits rows using the CSV module.  This is rather
+# mind-bending due to the fact that the csv module only understands
+# iteration with the for-loop.  To make it work, we wrap it around
+# a generator that simply produces the last item received.
 @consumer
 def to_csv(target):
     def producer():
