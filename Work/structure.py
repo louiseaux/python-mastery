@@ -29,6 +29,13 @@ class Structure(metaclass=StructureMeta):
         return '%s(%s)' % (type(self).__name__,
                            ', '.join(repr(getattr(self, name)) for name in self._fields))
     
+    def __iter__(self):
+        for name in self._fields:
+            yield getattr(self, name)
+
+    def __eq__(self, other):
+        return isinstance(other, type(self)) and tuple(self) == tuple(other)
+
     @classmethod
     def from_row(cls, row):
         rowdata = [ func(val) for func, val in zip(cls._types, row) ]
