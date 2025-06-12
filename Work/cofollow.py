@@ -17,6 +17,11 @@ def follow(filename, target):
             else:
                 time.sleep(0.1)
 
+def receive(expected_type):
+    msg = yield
+    assert isinstance(msg, expected_type), 'Expected type %s' % (expected_type)
+    return msg
+
 # Decorator for coroutine functions
 def consumer(func):
     @wraps(func)
@@ -30,11 +35,8 @@ def consumer(func):
 @consumer
 def printer():
     while True:
-        try:
-            item = yield    # Receive an item sent to me
-            print(item)
-        except Exception as e:
-            print('ERROR: %r' % e)
+        item = yield from receive(object)    # Receive an item sent to me
+        print(item)
 
 # Example use
 if __name__ == '__main__':
