@@ -2,6 +2,8 @@
 #
 # Exercise 6.1
 
+__all__ = [ 'Structure' ]
+
 from .validate import Validator, validated
 from collections import ChainMap
 

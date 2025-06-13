@@ -1,6 +1,8 @@
-# tableformat.py
+# formatter.py
 #
-# Exercise 3.2
+# Exercise 9.3
+
+__all__ = [ 'create_formatter', 'print_table' ]
 
 from abc import ABC, abstractmethod
 
@@ -25,33 +27,9 @@ class TableFormatter(ABC):
     def row(self, rowdata):
         pass
 
-class TextTableFormatter(TableFormatter):
-    def headings(self, headers):
-        print(' '.join('%10s' % h for h in headers))
-        print(('-'*10 + ' ')*len(headers))
-    
-    def row(self, rowdata):
-        print(' '.join('%10s' % d for d in rowdata))
-
-class CSVTableFormatter(TableFormatter):
-    def headings(self, headers):
-        print(','.join(headers))
-    
-    def row(self, rowdata):
-        print(','.join(str(d) for d in rowdata))
-
-class HTMLTableFormatter(TableFormatter):
-    def headings(self, headers):
-        print('<tr>', end=' ')
-        for h in headers:
-            print('<th>%s</th>' % h, end=' ')
-        print('</tr>')
-    
-    def row(self, rowdata):
-        print('<tr>', end=' ')
-        for d in rowdata:
-            print('<td>%s</td>' % d, end=' ')
-        print('</tr>')
+from .formats.text import TextTableFormatter
+from .formats.csv import CSVTableFormatter
+from .formats.html import HTMLTableFormatter
 
 class ColumnFormatMixin:
     formats = []

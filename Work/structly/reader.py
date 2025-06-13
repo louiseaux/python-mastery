@@ -2,6 +2,9 @@
 #
 # Exercise 5.1
 
+__all__ = [ 'read_csv_as_dicts',
+            'read_csv_as_instances' ]
+
 import csv
 import logging
 
