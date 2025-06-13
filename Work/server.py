@@ -69,7 +69,7 @@ async def echo_handler(client, address):
         data = await client.recv(1000)
         if not data:
             break
-        await client.send(b'GOT:', data)
+        await client.send(b'GOT:' + data)
     print('Connection closed')
 
 if __name__ == '__main__':
