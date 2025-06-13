@@ -4,8 +4,8 @@
 
 import csv
 from cofollow import consumer, follow, receive
-from structure import Structure
-from tableformat import create_formatter
+from structly.structure import Structure
+from structly.tableformat import create_formatter
 
 class Ticker(Structure):
     name = String()
